@@ -413,8 +413,23 @@
 </div>
  
  
-<script src="libs/html2canvas.min/html2canvas.min.js"></script>
-<script src="libs/jspdf.umd.min/jspdf.umd.min.js"></script>
+<script src="libs/jspdf.umd.min.js"></script> 
+<script src="libs/html2canvas.min.js"></script>
+
+<script>
+  // 等待 DOM 加载完毕再执行
+  window.addEventListener('DOMContentLoaded', () => {
+    const { jsPDF } = window.jspdf;
+
+    // 确保 jsPDF 加载成功
+    if (jsPDF) {
+      console.log('jsPDF 已加载');
+    } else {
+      console.error('jsPDF 加载失败');
+    }
+  });
+</script>
+
 
 
 <script>
