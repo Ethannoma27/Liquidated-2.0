@@ -366,6 +366,57 @@ body.enter{
   pointer-events:none;
 } 
 
+
+/* =========================
+   📱 Mobile FAB（右下角增强版）
+   iOS / 产品级浮动按钮
+========================= */
+@media (max-width: 768px){
+
+  .back-btn{
+    position: fixed;
+
+    /* 📍 保持右下角 */
+    right: 18px;
+    bottom: 18px;
+
+    z-index: 9999;
+
+    /* 🧠 更像“系统级按钮” */
+    padding: 12px 16px;
+    font-size: 14px;
+    letter-spacing: 1px;
+
+    border-radius: 999px;
+
+    color: rgba(255,255,255,.92);
+
+    /* 🌌 更强可见度（手机必须更清晰） */
+    background: rgba(20, 22, 35, 0.72);
+    border: 1px solid rgba(255,255,255,0.22);
+
+    box-shadow:
+      0 10px 30px rgba(0,0,0,.45),
+      0 0 0 1px rgba(120,140,255,0.08);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    transition: all .25s ease;
+
+    /* 🧠 防止 iOS 点击闪烁 */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ✨ hover / touch feedback */
+  .back-btn:active{
+    transform: scale(0.96);
+    background: rgba(40, 44, 70, 0.85);
+  }
+} 
+
+
+
 </style>
 </head>
 
@@ -588,9 +639,13 @@ window.addEventListener("pageshow", function () {
   document.body.classList.add("enter")
 }) 
 
+
+
+
+
 </script>  
 
-</body> 
 
+</body> 
 
 </html>   
