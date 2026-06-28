@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>01 / 方案结构（简化AI版）</title>
+
+<style>
+body{
+  margin:0;
+  font-family:"Songti SC","PingFang SC",serif;
+  color:rgba(255,255,255,.88);
+
+  /* 🧠 关键：只保留纯底色 */
+  background:#05060d;
+
+  opacity:0;
+  transform:scale(1.02);
+  transition:opacity .25s ease, transform .25s ease;
+
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+
+  overflow-x:hidden;
+}
+
+/* 🌌 唯一背景层（全部集中在这里） */
+.stars{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+
+  /* 🧠 关键：避免 transparent，全部用实色过渡 */
+  background:
+    radial-gradient(circle at 20% 20%, #1a2450 0%, #0b1020 65%),
+    radial-gradient(circle at 80% 60%, #0f1b3d 0%, #070b18 70%),
+    linear-gradient(180deg, #05060d 0%, #050816 100%);
+
+  /* 🧠 防止 GPU seam */
+  transform:translateZ(0);
+}
+
+/* ✨ 星点（极简稳定版） */
+.stars::before{
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.8) 1px, transparent 2px),
+    radial-gradient(circle at 40% 75%, rgba(255,255,255,.4) 1px, transparent 2px),
+    radial-gradient(circle at 75% 35%, rgba(255,255,255,.35) 1px, transparent 2px),
+    radial-gradient(circle at 90% 60%, rgba(200,220,255,.25) 1px, transparent 2px);
+
+  opacity:.55;
+
+  /* 🚫 关键：完全禁止 blur / filter */
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+/* 📦 容器 */
+.container{
+  max-width:760px;
+  margin:auto;
+  padding:110px 22px 140px;
+}
+
+/* 🧭 标题 */
+.title{
+  font-size:1.85rem;
+  letter-spacing:2px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  opacity:.55;
+  font-size:.95rem;
+  margin-bottom:60px;
+}
+
+/* 💬 AI块 */
+.ai-entry{
+  margin:30px 0 70px;
+  padding:18px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* 💬 消息 */
+.msg{
+  max-width:78%;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.6;
+  margin:10px 0;
+  white-space:pre-wrap;
+}
+
+.msg.user{
+  background:#3b82f6;
+  color:#fff;
+  margin-left:auto;
+}
+
+/* =========================
+   ✉️ 信纸手写风（最终优化版）
+   特点：连续叙述 / 低分段感 / 清晰阅读优先
+========================= */
+
+.paper-note{
+  position: relative;
+
+  padding: 28px 30px;
+
+  border-radius: 14px;
+
+  /* 🧻 暖白信纸 */
+  background: #f6f2ea;
+
+  /* 🧠 更接近真实纸张边缘 */
+  border: 1px solid rgba(120, 110, 95, 0.18);
+
+  /* 📦 稳定纸张阴影 */
+  box-shadow:
+    0 18px 50px rgba(0,0,0,0.35),
+    0 2px 6px rgba(0,0,0,0.15);
+
+  /* ✍️ 手写风字体 */
+  font-family:
+    "STKaiti",
+    "Kaiti SC",
+    "Songti SC",
+    serif;
+
+  font-size: 15px;
+
+  /* 🧠 核心：增强“连续阅读感” */
+  line-height: 2.25;
+
+  letter-spacing: 0.35px;
+
+  color: rgba(35, 30, 25, 0.88);
+
+  white-space: normal;
+
+  /* ✍️ 轻微墨感（但不模糊） */
+  text-shadow: 0 0 0.5px rgba(0,0,0,0.12);
+
+  /* ❌ 禁止任何模糊（保证结构清晰） */
+  filter: none;
+}
+
+/* =========================
+   🧻 纸张自然纹理（低干扰版）
+========================= */
+.paper-note::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 14px;
+  pointer-events:none;
+
+  /* 🌫️ 非结构性纸纹（避免UI感） */
+  background-image:
+    radial-gradient(circle at 18% 25%, rgba(0,0,0,0.025), transparent 60%),
+    radial-gradient(circle at 72% 68%, rgba(0,0,0,0.02), transparent 65%),
+    radial-gradient(circle at 40% 90%, rgba(0,0,0,0.015), transparent 60%);
+
+  opacity: 0.55;
+}
+
+/* =========================
+   📜 段落系统（关键优化：降低碎片感）
+========================= */
+
+.paper-note p{
+  margin: 0 0 8px;
+
+  /* 🧠 连续阅读核心 */
+  line-height: 2.25;
+
+  /* ❌ 不做逐段动画（避免碎片感） */
+  animation: none;
+}
+
+/* 👉 相邻段落微连接（不“断思路”） */
+.paper-note p + p{
+  margin-top: 2px;
+}
+
+/* =========================
+   🧠 标题/强调（如果你用到）
+========================= */
+
+.paper-note strong{
+  font-weight: 600;
+  color: rgba(25, 20, 15, 0.92);
+}
+
+/* =========================
+   📏 排版稳定性 */
+.paper-note *{
+  box-sizing: border-box;
+} 
+
+
+
+/* 📦 内容结构 */
+.block{
+  margin:70px 0;
+}
+
+/* 🧭 小标题 */
+.hint{
+  font-size:.85rem;
+  letter-spacing:2px;
+  opacity:.55;
+  margin-bottom:14px;
+}
+
+/* 📖 正文 */
+.text{
+  line-height:2.05;
+  font-size:1rem;
+  opacity:.88;
+}
+
+/* 列表 */
+ul{
+  padding-left:18px;
+  margin:10px 0;
+}
+
+li{
+  margin:6px 0;
+}
+
+/* 分割线 */
+.divider{
+  height:1px;
+  margin:55px 0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+}
+
+/* 初始状态 */
+body{
+  opacity:0;
+}
+
+/* 进入状态 */
+body.enter{
+  opacity:1;
+  transition:opacity .28s ease;
+} 
+
+
+.back-btn{
+  position:fixed;
+
+  /* 📦 对齐到内容容器右下角 */
+  right:calc((100% - 760px) / 2 + 22px);
+  bottom:90px;
+
+  z-index:999;
+
+  padding:10px 14px;
+  border-radius:999px;
+
+  font-size:13px;
+  letter-spacing:1px;
+  text-decoration:none;
+
+  color:rgba(255,255,255,.75);
+
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+  transition:all .25s ease;
+}
+
+/* ✨ hover */
+.back-btn:hover{
+  transform:translateY(-3px);
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;
+} 
+
+
+/* =========================
+   🌌 Cosmic Entry Tag
+========================= */
+.cosmic-tag{
+  font-size:11px;
+  letter-spacing:2px;
+  color:rgba(180,200,255,0.65);
+  margin-bottom:14px;
+}
+
+/* =========================
+   🌌 模块分割线（关键断层）
+========================= */
+.cosmic-divider{
+  height:1px;
+  margin:70px 0 50px;
+
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255,255,255,0.12),
+    transparent
+  );
+
+  opacity:0.7;
+} 
+
+/* =========================
+   🌌 独立记录模块（宇宙舱）
+========================= */
+.cosmic-entry{
+  position:relative;
+
+  margin:40px 0 70px;   /* ⭐ 和上下内容拉开距离 */
+
+  padding:26px 24px;
+
+  border-radius:18px;
+
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(35, 45, 90, 0.35),
+    rgba(8, 10, 20, 0.75)
+  );
+
+  border:1px solid rgba(255,255,255,0.10);
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.55),
+    inset 0 0 60px rgba(120,140,255,0.06);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  z-index:2;
+} 
+
+.cosmic-entry::before{
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 1px, transparent 2px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.06) 1px, transparent 2px);
+
+  opacity:0.6;
+  pointer-events:none;
+} 
+
+</style>
+</head>
+
+<body> 
+
+
+  <div class="stars"></div>
+
+<div class="container">
+
+ <div class="title">📋 02 / 生活状态层 · 精简版框架</div> 
+  <div class="subtitle">关于远期可能的备份（结构化整理）</div>    
+
+  <!-- =======================
+     🎬 纪录式自述开头（独立宇宙模块）
+======================= -->
+
+  <div class="block cosmic-entry">
+
+    <div class="text">
+
+   <div class="paper-note">
+
+
+  关于这一部分的想法，其实想到的过程也很简单。<br> 
+  它不是一份对未来指手画脚的规划书，<br> 
+  更不是试图替谁去提早做任何决定。<br>  
+
+  自由意志和选择权，永远是这所有可能性的最高原则。<br>
+  每个人都是自己人生的绝对主人，<br>
+  这里只是在完全尊重自由选择的基础上，提供一些可能的依据。<br>  
+
+  最初，只是在和 Gemini 闲聊时，<br>
+  了解到一些关于未成年子女归属的客观法律常识。<br> 
+  那些现实的司法规则，慢慢触发了关于‘生活弹性’的一些新思考。<br>  
+  在那些客观的规则里，手作店这种时间灵活、自由度高的独立经营状态，<br>
+  在面对外部不确定性时，其实有着极大的天然优势。<br>  
+
+  它能随时保障最实质的陪伴，也完全不会因为财富的多寡而被否定。<br> 
+  所以，这里只是把‘流水的分流’和‘生活的痕迹’这些现实常识，<br> 
+  做了一个纯粹客观的整理，作为一叠随时可以调用的底牌。<br>
+  如果你愿意，随时可以利用这些规则把生活的系统优化成你想要的；<br> 
+  如果你不愿意，这里什么也不预设，未来依旧由你随心所欲来掌握。<br> 
+
+  这里面只是在做一种可能的预留，而不作为任何真实预设，<br> 
+  为了让拥有自由意志的灵魂，在任何时候都有说‘不’的底气，<br>  
+  在任何变局发生时，都能完全掌控自己生活的连续性与稳定性。<br><br>    
+
+</div> 
+
+    </div>
+
+  </div>
+
+  <!-- 🌌 模块分割线（视觉断层） -->
+  <div class="cosmic-divider"></div> 
+
+ 
+  <!-- ① -->
+  <div class="block">
+
+    <div class="hint">🛡️ 一、法律的核心原则（Legal Logic）</div> 
+
+    <div class="text">
+
+      <p>
+        在涉及未成年子女抚养权相关的法律判断中，核心原则通常为“最有利于未成年子女”与“维持既有生活稳定性”。 
+      </p>
+
+      <ul>
+        <li>
+          财富非决定因素：司法实践中并不存在“以财富多寡作为唯一优先标准”的裁决机制，只要一方具备基本稳定的抚养能力，即可满足基本门槛
+        </li>
+        <li>
+          实际稳定优先：为避免对未成年人造成二次心理冲击，法院通常倾向于维持既有实际抚养结构 
+        </li>
+      </ul>
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div> 
+
+  <!-- ② -->
+  <div class="block">
+
+    <div class="hint">📊 二、实质陪伴的时间筹码（Time Advantage）</div> 
+
+    <div class="text">
+
+      <p>
+        在司法与现实评估中，“时间参与度”往往比单纯经济能力更具权重。 
+      </p>
+
+      <p>
+        具备灵活时间安排的独立经营模式（如手作、文创类），在子女日常陪伴方面具有天然优势。 
+      </p>
+
+      <ul>
+        <li>可实现日常接送与陪伴</li> 
+        <li>可深度参与学习与生活管理</li> 
+        <li>增强子女稳定心理安全感</li>  
+      </ul>
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ③ -->
+  <div class="block">
+
+    <div class="hint">🧾 三、支出痕迹的凭据化留存（Evidence Chain）</div>  
+
+    <div class="text">
+
+      <p>
+        在长期结构中，资金的意义最终体现在实际生活痕迹的累积，而非单纯数字流动。 
+      </p>
+
+      <ul>
+        <li>
+          流水归类：收入应呈现为合法稳定劳动或经营所得 
+        </li>
+        <li>
+          支出留痕：长沙本地孩子教育、生活类支出可保留收据小票类凭证 
+        </li>
+        <li>
+          长期累积：形成连续、可追溯的生活参与链 
+        </li>
+      </ul>
+
+      <p>
+        这些记录构成对“长期实际照护参与”的事实证明结构。 
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ④ -->
+  <div class="block">
+
+    <div class="hint">🕊️ 四、综合抗风险对冲（Risk Cushion）</div> 
+
+    <div class="text">
+
+      <p>
+        在不确定性环境下，通过结构化方式降低外部风险对生活系统的冲击。 
+      </p>
+
+      <ul>
+        <li>
+          债务处理机制：通过周期性资金安排进行协商式风险化解 
+        </li>
+        <li>
+          第三方支撑结构：通过合伙人与独立资源形成稳定外部支持 
+        </li>
+      </ul>
+
+      <p>
+        整体目标是维持系统稳定性，而非追求单点最优结果。 
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+<!-- =======================
+     🕊️ 五、最终说明（替换版本）
+======================= -->
+
+ <!-- ⑤ -->
+  <div class="block">
+
+    <div class="hint">🏁 五、目前说明（Notes）</div> 
+
+    <div class="text"> 
+
+      <p>
+        这一部分梳理出来的原则，纯粹是拿来当作一份有备无患的远期可能的备份。 
+      </p>
+
+      <p>
+        它不作为对任何现实关系或既有状态的干预或预设，  
+      </p>
+
+      <ul>
+        <li>
+          风险预留：在变化发生前多备好一条无形的退路，不追求任何特定的结果    
+        </li>
+        <li>
+          系统稳固：以维持日常生活的连续性为核心，让平静的日子免受外界波折的冲击   
+        </li>
+        <li>
+          自主可控：确保无论外部环境怎么变，主导权始终在拥有自由意志的人手里  
+        </li>
+      </ul>
+      <p> 
+        整个推演只是参考备份，不构成任何隐形期待，以尊重个人自由意志为最高优先级。</p>  
+
+
+    </div>
+
+  </div> 
+</div>  
+
+
+<a class="back-btn" href="index.html">← 返回首页</a>    
+
+</div> 
+<script>
+window.addEventListener("pageshow", function () {
+  document.body.classList.add("enter")
+}) 
+
+</script>  
+
+</body> 
+
+
+</html>   

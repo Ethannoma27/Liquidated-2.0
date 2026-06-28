@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宇宙信件系统 + Gemini</title>
+
+<style>
+
+
+
+/* =======================
+   🌌 基础背景
+======================= */
+
+body{
+    margin:0;
+    font-family:"Songti SC","PingFang SC",serif;
+    color:rgba(255,255,255,.88);
+    background:
+        radial-gradient(circle at 20% 20%, rgba(120,140,255,.08), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,.06), transparent 45%),
+        linear-gradient(180deg,#05060d,#070a18,#050816);
+}
+
+/* =======================
+   🌠 星空层（统一修复版）
+======================= */
+
+
+.stars{
+    position:fixed;
+    inset:0;
+    z-index:-2;
+
+    /* 🔵 增强蓝紫宇宙底色 */
+    background:
+        radial-gradient(circle at 20% 30%, rgba(120,160,255,.14), transparent 45%),
+        radial-gradient(circle at 75% 65%, rgba(180,200,255,.10), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.04), transparent 60%),
+        linear-gradient(180deg,#070b1a,#0b1230,#0a0f22);
+}
+
+/* 🌟 星点层增强“远近感” */
+.stars::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 25%, rgba(255,255,255,.9) 1px, transparent 2px),
+        radial-gradient(circle at 40% 70%, rgba(200,220,255,.7) 1px, transparent 2px),
+        radial-gradient(circle at 70% 35%, rgba(255,255,255,.6) 1px, transparent 2px),
+        radial-gradient(circle at 85% 80%, rgba(180,200,255,.5) 1px, transparent 2px);
+    opacity:.65;
+    filter: blur(.2px);
+} 
+
+@keyframes twinkle{
+    0%{opacity:.15;}
+    50%{opacity:.32;}
+    100%{opacity:.18;}
+}
+
+
+
+/* =======================
+   📦 布局容器（不动结构）
+======================= */
+
+.container{
+    max-width:760px;
+    margin:auto;
+    padding:110px 22px;
+}
+
+/* =======================
+   🧱 卡片系统（Ⅲ部分用）
+======================= */
+
+.cards{
+    margin-top:50px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.card{
+    padding:18px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.04);
+    cursor:pointer;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+    background:rgba(255,255,255,.08);
+}
+
+.tag{
+    font-size:.85rem;
+    opacity:.6;
+    margin-bottom:6px;
+}
+
+/* =======================
+   📌 hint（ⅠⅡⅢⅣ 标题）
+   👉 保留你原本“Ⅰ · 时间”风格不动结构
+======================= */
+
+.hint{
+    font-size:0.9rem;
+    letter-spacing:1.4px;
+    margin-bottom:18px;
+    color:rgba(255,255,255,.5);
+    font-weight:300;
+    opacity:.85;
+}
+
+/* =======================
+   📖 正文结构（你Ⅰ·时间所在区域）
+======================= */
+
+.center{
+    text-align:center;
+    line-height:2.8;
+    font-size:1.15rem;
+    margin:140px 0;
+    opacity:.9;
+}
+
+.block{
+    margin:120px 0;
+}
+
+
+/* =======================
+   💬 msg系统（ChatGPT风格升级版）
+======================= */
+
+.msg{
+    max-width:76%;
+    padding:12px 14px;
+    border-radius:12px;
+    line-height:1.7;
+    font-size:14.5px;
+    white-space:pre-wrap;
+    margin:8px 0;
+    animation: fade .18s ease;
+
+    /* ✨ 去掉“浮夸感”，改为干净平面 */
+    box-shadow:none;
+}
+
+/* 用户消息（克制蓝色） */
+.msg.user{
+    background:#3b82f6;
+    color:white;
+    margin-left:auto;
+}
+
+/* AI消息（ChatGPT核心风格） */
+.msg.ai{
+    background:#f7f7f8;
+    color:#111827;
+    margin-right:auto;
+
+    border:1px solid #e5e7eb;
+}
+
+/* 动画（更轻） */
+@keyframes fade{
+    from{opacity:0; transform:translateY(4px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+/* =======================
+   ✦ 星光（弱化，不抢UI）
+======================= */
+
+.star{ font-size:30px; 
+  
+  animation:blink 5s infinite; } 
+
+@keyframes blink{ 0%,100%{opacity:1;} 
+
+50%{opacity:.3;} } .fadein{ animation:fadein 2s; } 
+
+@keyframes fadein{ from{ opacity:0; 
+  
+  transform:translateY(30px); } to{ opacity:1; transform:none; } }
+
+
+/* =======================
+   🧩 AI层（ChatGPT式界面）
+======================= */
+
+.ai-overlay{
+    position:fixed;
+    inset:0;
+    display:none;
+    flex-direction:column;
+    z-index:9999;
+
+    /* 🧼 干净白灰系统界面 */
+    background:#ffffff;
+}
+
+/* =======================
+   🧭 顶部栏（非常关键：ChatGPT感）
+======================= */
+
+.ai-header{
+    padding:14px 16px;
+
+    background:#ffffff;
+    border-bottom:1px solid #e5e7eb;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    color:#111827;
+    font-weight:600;
+    font-size:14px;
+}
+
+/* =======================
+   💬 输出区（阅读流）
+======================= */
+
+.ai-output{
+    flex:1;
+    overflow:auto;
+    padding:18px 16px;
+
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+
+    background:#ffffff;
+}
+
+/* =======================
+   ⌨️ 输入区（极简输入框）
+======================= */
+
+.ai-input{
+    display:flex;
+    gap:10px;
+    padding:12px;
+
+    background:#ffffff;
+    border-top:1px solid #e5e7eb;
+}
+
+/* 输入框 */
+.ai-input textarea{
+    flex:1;
+    height:60px;
+    border-radius:10px;
+
+    border:1px solid #d1d5db;
+    background:#ffffff;
+
+    color:#111827;
+    padding:10px;
+
+    outline:none;
+    font-family:inherit;
+    font-size:14px;
+}
+
+/* 输入框 focus（轻微蓝色提示） */
+.ai-input textarea:focus{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 2px rgba(59,130,246,.15);
+}
+
+/* 按钮 */
+.ai-input button{
+    padding:10px 14px;
+    border:none;
+    border-radius:10px;
+
+    background:#3b82f6;
+    color:white;
+
+    cursor:pointer;
+    transition:.15s;
+}
+
+.ai-input button:hover{
+    background:#2563eb;
+}
+
+/* =======================
+   ❌ 关闭按钮（极简）
+======================= */
+
+.close-btn{
+    background:transparent;
+    border:none;
+    font-size:16px;
+    cursor:pointer;
+
+    color:#6b7280;
+}
+
+.close-btn:hover{
+    color:#111827;
+}
+
+/* =======================
+   📌 hint（不抢视觉）
+======================= */
+
+.hint-style{
+    color:rgba(255,255,255,.5);
+}  
+
+
+</style>
+</head>
+
+<body>
+
+  <div class="stars"></div>
+
+<div class="container">
+
+<h1>To 珊 </h1> 
+
+<!-- Level 1 -->
+<div class="block">
+  <div class="hint">Ⅰ · 时间</div>
+  <p>见字如面，终于到约定时间，可以和你简单交流几句啦</p>  
+</div>
+
+
+<!-- Level 2 -->
+<div class="block">
+  <div class="hint">Ⅱ · 立场</div>
+  <p>这些内容不是请求，也不是压力，只是整理有关未来的可能。</p>  
+</div>
+
+
+<!-- Level 3 -->
+<div class="block">
+  <div class="hint">Ⅲ · 三个思考入口</div> 
+
+  <div class="cards">
+
+    <div class="card" onclick="go('page1.html')"> 
+      <div class="tag">01 / 现实结构层</div> 
+      关于日常支持的真实演进（一份随笔整理）  
+    </div> 
+
+    <div class="card" onclick="go('page2.html')"> 
+      <div class="tag">02 / 生活状态层</div> 
+      关于远期可能的备份（结构化整理）  
+    </div> 
+
+    <div class="card" onclick="location.href='page3.html'"> 
+      <div class="tag">03 / 假设与探索</div>  
+      关于自由意志与未来生活（一种随心设想）  
+    </div> 
+
+  </div>
+</div> 
+
+<!-- Level 4（收束但仍在 container 内） -->
+<div class="block">
+  <div class="hint">Ⅳ · 我的态度</div>
+
+  <div class="center">
+    我会做我该做的部分。<br>
+    不设条件，不求回报。
+  </div>
+
+  <div class="center">
+    如果你愿意的时候，我们可以一起交流。<br> 
+    如果你不愿意，我什么也不追问。  
+  </div> 
+
+  <div class="center">
+    你永远是你人生的主人。
+  </div>
+
+  <div class="center">
+    选择权始终在你那里。
+  </div>
+
+</div>
+
+<!-- Level 5 · 余白 -->
+<div class="block">
+
+  <div class="hint">Ⅴ · 余白</div> 
+
+  <div class="center">
+    我只要把能做的部分做好，就已经很知足。<br>
+    相信未来的我们会更轻松、更安心。 
+  </div>
+
+  <div class="center" style="margin-top:180px;">
+    From 宁 
+  </div>
+
+  <div class="center star">
+    ✦
+  </div>
+
+  <div class="center hint-style">
+   至于结果怎样  <br>
+   顺其自然 
+  </div> 
+
+</div> 
+<!-- =======================
+     💬 AI宇宙
+======================= -->
+
+<div class="ai-overlay" id="ai">
+
+<div class="ai-header">
+<span id="aiTitle">Gemini 对话</span>
+<button class="close-btn" onclick="closeAI()">✕</button>
+</div>
+
+<div class="ai-output" id="chat"></div>
+
+<div class="ai-input">
+<textarea id="input"></textarea>
+<button onclick="send()">发送</button>
+</div>
+</div>
+
+<script>
+
+let current = 1
+
+const prompts = {
+  1: "分析还款方案结构优化建议",
+  2: "分析抚养权法律与现实风险",
+  3: "模拟未来合居关系结构变化"
+}
+
+/* =========================
+   🌌 更丝滑的空间跳转（升级版）
+========================= */
+function go(url){
+
+  // 防止重复点击
+  if (window.__going) return
+  window.__going = true
+
+  // 创建空间过渡层
+  const layer = document.createElement("div")
+
+  layer.style.position = "fixed"
+  layer.style.inset = "0"
+  layer.style.zIndex = "99999"
+  layer.style.background = `
+    radial-gradient(circle at center,
+      rgba(20,30,60,0.75),
+      rgba(0,0,0,0.95)
+    )
+  `
+  layer.style.opacity = "0"
+  layer.style.transition = "opacity .35s ease"
+
+  document.body.appendChild(layer)
+
+  // 第一阶段：进入“沉入空间”
+  requestAnimationFrame(()=>{
+    document.body.style.transition = "transform .3s ease, opacity .3s ease"
+    document.body.style.transform = "scale(0.985)"
+    document.body.style.opacity = "0.35"
+
+    layer.style.opacity = "1"
+  })
+
+  // 第二阶段：真正跳转
+  setTimeout(()=>{
+    window.location.href = url
+  }, 350)
+}
+
+
+/* =========================
+   💬 AI系统（保持原逻辑）
+========================= */
+function openAI(i){
+  current = i
+
+  document.getElementById("ai").style.display = "flex"
+  document.getElementById("chat").innerHTML = ""
+
+  addMsg("user", prompts[i])
+  sendAuto(prompts[i])
+}
+
+function closeAI(){
+  document.getElementById("ai").style.display = "none"
+}
+
+
+/* =========================
+   ✉️ 消息系统
+========================= */
+function addMsg(role, text){
+  const div = document.createElement("div")
+  div.className = "msg " + role
+  div.textContent = text
+  document.getElementById("chat").appendChild(div)
+  div.scrollIntoView({ behavior: "smooth", block: "end" })
+}
+
+
+/* =========================
+   🤖 AI模拟（占位）
+========================= */
+async function callAI(prompt){
+  return "AI回复：\n\n" + prompt
+}
+
+async function sendAuto(text){
+  const res = await callAI(text)
+  addMsg("ai", res)
+}
+
+
+/* =========================
+   ⌨️ 用户输入
+========================= */
+async function send(){
+  const input = document.getElementById("input")
+  const text = input.value.trim()
+  if(!text) return
+
+  addMsg("user", text)
+  input.value = ""
+
+  const res = await callAI(text)
+  addMsg("ai", res)
+} 
+</script> 
+
+</body> 
+</html>    

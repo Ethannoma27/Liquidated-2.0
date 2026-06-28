@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>01 / 方案结构（简化AI版）</title>
+
+<style>
+body{
+  margin:0;
+  font-family:"Songti SC","PingFang SC",serif;
+  color:rgba(255,255,255,.88);
+
+  /* 🧠 关键：只保留纯底色 */
+  background:#05060d;
+
+  opacity:0;
+  transform:scale(1.02);
+  transition:opacity .25s ease, transform .25s ease;
+
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+
+  overflow-x:hidden;
+}
+
+/* 🌌 唯一背景层（全部集中在这里） */
+.stars{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+
+  /* 🧠 关键：避免 transparent，全部用实色过渡 */
+  background:
+    radial-gradient(circle at 20% 20%, #1a2450 0%, #0b1020 65%),
+    radial-gradient(circle at 80% 60%, #0f1b3d 0%, #070b18 70%),
+    linear-gradient(180deg, #05060d 0%, #050816 100%);
+
+  /* 🧠 防止 GPU seam */
+  transform:translateZ(0);
+}
+
+/* ✨ 星点（极简稳定版） */
+.stars::before{
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.8) 1px, transparent 2px),
+    radial-gradient(circle at 40% 75%, rgba(255,255,255,.4) 1px, transparent 2px),
+    radial-gradient(circle at 75% 35%, rgba(255,255,255,.35) 1px, transparent 2px),
+    radial-gradient(circle at 90% 60%, rgba(200,220,255,.25) 1px, transparent 2px);
+
+  opacity:.55;
+
+  /* 🚫 关键：完全禁止 blur / filter */
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+/* 📦 容器 */
+.container{
+  max-width:760px;
+  margin:auto;
+  padding:110px 22px 140px;
+}
+
+/* 🧭 标题 */
+.title{
+  font-size:1.85rem;
+  letter-spacing:2px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  opacity:.55;
+  font-size:.95rem;
+  margin-bottom:60px;
+}
+
+/* 💬 AI块 */
+.ai-entry{
+  margin:30px 0 70px;
+  padding:18px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* 💬 消息 */
+.msg{
+  max-width:78%;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.6;
+  margin:10px 0;
+  white-space:pre-wrap;
+}
+
+.msg.user{
+  background:#3b82f6;
+  color:#fff;
+  margin-left:auto;
+}
+
+/* =========================
+   ✉️ 信纸手写风（最终优化版）
+   特点：连续叙述 / 低分段感 / 清晰阅读优先
+========================= */
+
+.paper-note{
+  position: relative;
+
+  padding: 28px 30px;
+
+  border-radius: 14px;
+
+  /* 🧻 暖白信纸 */
+  background: #f6f2ea;
+
+  /* 🧠 更接近真实纸张边缘 */
+  border: 1px solid rgba(120, 110, 95, 0.18);
+
+  /* 📦 稳定纸张阴影 */
+  box-shadow:
+    0 18px 50px rgba(0,0,0,0.35),
+    0 2px 6px rgba(0,0,0,0.15);
+
+  /* ✍️ 手写风字体 */
+  font-family:
+    "STKaiti",
+    "Kaiti SC",
+    "Songti SC",
+    serif;
+
+  font-size: 15px;
+
+  /* 🧠 核心：增强“连续阅读感” */
+  line-height: 2.25;
+
+  letter-spacing: 0.35px;
+
+  color: rgba(35, 30, 25, 0.88);
+
+  white-space: normal;
+
+  /* ✍️ 轻微墨感（但不模糊） */
+  text-shadow: 0 0 0.5px rgba(0,0,0,0.12);
+
+  /* ❌ 禁止任何模糊（保证结构清晰） */
+  filter: none;
+}
+
+/* =========================
+   🧻 纸张自然纹理（低干扰版）
+========================= */
+.paper-note::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 14px;
+  pointer-events:none;
+
+  /* 🌫️ 非结构性纸纹（避免UI感） */
+  background-image:
+    radial-gradient(circle at 18% 25%, rgba(0,0,0,0.025), transparent 60%),
+    radial-gradient(circle at 72% 68%, rgba(0,0,0,0.02), transparent 65%),
+    radial-gradient(circle at 40% 90%, rgba(0,0,0,0.015), transparent 60%);
+
+  opacity: 0.55;
+}
+
+/* =========================
+   📜 段落系统（关键优化：降低碎片感）
+========================= */
+
+.paper-note p{
+  margin: 0 0 8px;
+
+  /* 🧠 连续阅读核心 */
+  line-height: 2.25;
+
+  /* ❌ 不做逐段动画（避免碎片感） */
+  animation: none;
+}
+
+/* 👉 相邻段落微连接（不“断思路”） */
+.paper-note p + p{
+  margin-top: 2px;
+}
+
+/* =========================
+   🧠 标题/强调（如果你用到）
+========================= */
+
+.paper-note strong{
+  font-weight: 600;
+  color: rgba(25, 20, 15, 0.92);
+}
+
+/* =========================
+   📏 排版稳定性 */
+.paper-note *{
+  box-sizing: border-box;
+} 
+
+
+
+/* 📦 内容结构 */
+.block{
+  margin:70px 0;
+}
+
+/* 🧭 小标题 */
+.hint{
+  font-size:.85rem;
+  letter-spacing:2px;
+  opacity:.55;
+  margin-bottom:14px;
+}
+
+/* 📖 正文 */
+.text{
+  line-height:2.05;
+  font-size:1rem;
+  opacity:.88;
+}
+
+/* 列表 */
+ul{
+  padding-left:18px;
+  margin:10px 0;
+}
+
+li{
+  margin:6px 0;
+}
+
+/* 分割线 */
+.divider{
+  height:1px;
+  margin:55px 0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+}
+
+/* 初始状态 */
+body{
+  opacity:0;
+}
+
+/* 进入状态 */
+body.enter{
+  opacity:1;
+  transition:opacity .28s ease;
+} 
+
+
+.back-btn{
+  position:fixed;
+
+  /* 📦 对齐到内容容器右下角 */
+  right:calc((100% - 760px) / 2 + 22px);
+  bottom:90px;
+
+  z-index:999;
+
+  padding:10px 14px;
+  border-radius:999px;
+
+  font-size:13px;
+  letter-spacing:1px;
+  text-decoration:none;
+
+  color:rgba(255,255,255,.75);
+
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+  transition:all .25s ease;
+}
+
+/* ✨ hover */
+.back-btn:hover{
+  transform:translateY(-3px);
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;
+} 
+
+
+/* =========================
+   🌌 Cosmic Entry Tag
+========================= */
+.cosmic-tag{
+  font-size:11px;
+  letter-spacing:2px;
+  color:rgba(180,200,255,0.65);
+  margin-bottom:14px;
+}
+
+/* =========================
+   🌌 模块分割线（关键断层）
+========================= */
+.cosmic-divider{
+  height:1px;
+  margin:70px 0 50px;
+
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255,255,255,0.12),
+    transparent
+  );
+
+  opacity:0.7;
+} 
+
+/* =========================
+   🌌 独立记录模块（宇宙舱）
+========================= */
+.cosmic-entry{
+  position:relative;
+
+  margin:40px 0 70px;   /* ⭐ 和上下内容拉开距离 */
+
+  padding:26px 24px;
+
+  border-radius:18px;
+
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(35, 45, 90, 0.35),
+    rgba(8, 10, 20, 0.75)
+  );
+
+  border:1px solid rgba(255,255,255,0.10);
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.55),
+    inset 0 0 60px rgba(120,140,255,0.06);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  z-index:2;
+} 
+
+.cosmic-entry::before{
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 1px, transparent 2px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.06) 1px, transparent 2px);
+
+  opacity:0.6;
+  pointer-events:none;
+} 
+
+</style>
+</head>
+
+<body> 
+
+
+  <div class="stars"></div>
+
+<div class="container">
+
+  <div class="title">📋 01 / 现实结构层 · 精简版框架</div>
+  <div class="subtitle">关于日常支持的真实演进（一份随笔记录）</div>
+
+  <!-- =======================
+     🎬 纪录式自述开头（独立宇宙模块）
+======================= -->
+
+  <div class="block cosmic-entry">
+
+    <div class="text">
+
+   <div class="paper-note">
+
+  <p>最开始，只是在 2025.12 做了一个很简单的长期决定：</p>
+
+  <p>尝试用每月 2000 元左右的方式，把无法短期解决的事情，拆解成可持续的长期结构，<br>
+  然后发现这种预期方案的可预见路径，让压力减轻许多。</p>
+
+  <p>尽管自己目前的能力还有些差强人意，但是相信未来会趋于稳定。</p>
+
+  <p>到了 2026.6，对这件事情的理解，似乎考虑的更加完整，<br>
+  从单点结构，逐渐演变成了一个平稳、动态的长期系统。</p>
+
+  <p>并且过程中，基于过去一些因现实原因导致过微信钱包被冻过的底层经验，<br>
+  也基于对账户去集中化、物理隔离才能安全抗风险的敏锐认知，<br>
+  这些经验慢慢重组了对整个系统结构的判断。</p>
+
+  <p>这里面没有任何刻意的“设计”或强加的规划，<br>
+  它更像是一步一步，被现实的引力与未来探索的方式，调整出来的最自然形态。</p>
+
+  <p>感谢彼此的信任与耐心，我们会一点点把它应对下来的。</p>
+
+</div> 
+
+    </div>
+
+  </div>
+
+  <!-- 🌌 模块分割线（视觉断层） -->
+  <div class="cosmic-divider"></div> 
+
+  <!-- =======================
+       以下全部结构化内容（无AI穿插）
+  ======================= -->
+
+  <!-- =======================
+       ⏱️ 一、方案迭代
+  ======================= --> 
+
+
+  <div class="block">
+
+    <div class="hint">⏱️ 一、方案的两次迭代（Evolution）</div>
+
+    <div class="text">
+
+      <p>2025.12 · 初始设想：每月固定支出约 2000 元。</p> 
+
+      <p>当时属于直觉式的月供支持逻辑，旨在维持一种持续性的基础支持。</p> 
+
+      <p>2026.06 · 结构演进：不局限单一的视角，</p>  
+        
+      <p>将行为平稳融入长期的状态流转中。</p>  
+
+      <p>关注点从单点任务，转向未来生活整体的轻松度与自由度。</p> 
+
+      <p>方案将从一个具体的“动作”，演变成一个动态平衡的长期支持系统。</p>  
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- =======================
+       🛡️ 风险结构  
+  ======================= --> 
+  <div class="block">
+
+    <div class="hint">🛡️ 二、现实风险判断（Risk Control）</div> 
+
+    <div class="text">
+
+      <p>经验分享源于现实中由于小额贷引发过一次微信零钱强执冻结过的真实案例迁移。</p>  
+
+      <p>基于对资金安全性与流动性的敏感认知，形成以下避险策略：</p>  
+
+      <ul>
+        <li>去集中化：资金不适合长期集中在单一实名电子账户中</li> 
+        <li>物理隔离：采用分散流动、化整为零或使用匿名数字人民币钱包/现金方式</li>  
+        <li>低余额状态：实名卡与微信账户不保留太多静态沉淀余额</li> 
+      </ul>
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- =======================
+       📊 当前结构
+  ======================= -->
+  <div class="block">
+
+    <div class="hint">📊 三、当前运行结构（Current Framework）</div>
+
+    <div class="text">
+
+      <p>目前 3000 元/月的整体支持已被拆分为以下双轨并行结构：</p>  
+
+      <ul>
+        <li>日常流转维度：每月约 1500 元，可用于即时生活与亲子相关支出，日常的流动形式</li>   
+        <li>周期沉淀维度：每月约 1500 元，从本月起，每 6 个月形成约 9000 元阶段性资金，以半年为周期交付方式待确定，用于定点协商折扣还款</li>  
+      </ul>
+
+
+      <p>远期扩展维度：如果未来需要关于远期可能的备份，在条件允许时，将可以协同资源进一步增加现金流所需的必要流水。</p>      
+    </div>
+
+  </div>  
+
+  <div class="divider"></div>  
+
+<!-- =======================
+     🛡️ 谈判筹码与协商模型
+======================= -->
+<div class="block">
+
+  <div class="hint">🛡️ 四、谈判筹码与协商模型（Negotiation & Settlement）</div>
+
+  <iframe
+    src="gemini.html"
+    style="
+      width:100%;
+      height:1200px;
+      border:none;
+      border-radius:14px;
+      overflow:hidden;
+      background:transparent;
+    "
+  ></iframe>
+
+</div> 
+
+<div class="divider"></div> 
+  <!-- =======================
+       ⏳ 时间模型
+  ======================= -->
+  <div class="block">
+
+    <div class="hint">⏳ 五、时间与周期推演（Timeline）</div>
+
+    <div class="text">
+
+      <p>总目标：约 30 万元人民币。</p>
+
+      <p>在“4折协商模型”假设下，实际压力约等于 12 万元。</p> 
+
+      <ul>
+        <li>现有能力结构，整体周期预计可在 7 年内 完成</li>  
+        <li>如现金流改善，将会比这个 托底 的周期缩短</li>   
+      </ul> 
+
+      <p>该模型属于动态路径，而非固定结果。</p> 
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- =======================
+       🕊️ 最终说明
+  ======================= -->
+  <div class="block">
+
+    <div class="hint">🕊️ 六、目前说明（Notes）</div> 
+
+    <div class="text">
+
+      <p>这套结构不只是单一还款计划，而是一种现实条件下的长期结构支持。</p>   
+
+      <p>方案可视化只作为参考建议，并非指导，请不必当作任何压力。</p>      
+      <ul>
+        <li>以可持续性为最高优先级</li>  
+        <li>允许过程动态调整</li>  
+        <li>不追求一次性完成，而追求长期稳定运行</li>   
+      </ul>
+
+    </div>
+
+  </div>
+<a class="back-btn" href="index.html">← 返回首页</a>   
+
+</div> 
+<script>
+window.addEventListener("pageshow", function () {
+  document.body.classList.add("enter")
+}) 
+</script>  
+
+</body> 
+
+</html>     

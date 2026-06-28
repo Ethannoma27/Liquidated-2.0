@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>01 / 方案结构（简化AI版）</title>
+
+<style>
+body{
+  margin:0;
+  font-family:"Songti SC","PingFang SC",serif;
+  color:rgba(255,255,255,.88);
+
+  /* 🧠 关键：只保留纯底色 */
+  background:#05060d;
+
+  opacity:0;
+  transform:scale(1.02);
+  transition:opacity .25s ease, transform .25s ease;
+
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+
+  overflow-x:hidden;
+}
+
+/* 🌌 唯一背景层（全部集中在这里） */
+.stars{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+
+  /* 🧠 关键：避免 transparent，全部用实色过渡 */
+  background:
+    radial-gradient(circle at 20% 20%, #1a2450 0%, #0b1020 65%),
+    radial-gradient(circle at 80% 60%, #0f1b3d 0%, #070b18 70%),
+    linear-gradient(180deg, #05060d 0%, #050816 100%);
+
+  /* 🧠 防止 GPU seam */
+  transform:translateZ(0);
+}
+
+/* ✨ 星点（极简稳定版） */
+.stars::before{
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.8) 1px, transparent 2px),
+    radial-gradient(circle at 40% 75%, rgba(255,255,255,.4) 1px, transparent 2px),
+    radial-gradient(circle at 75% 35%, rgba(255,255,255,.35) 1px, transparent 2px),
+    radial-gradient(circle at 90% 60%, rgba(200,220,255,.25) 1px, transparent 2px);
+
+  opacity:.55;
+
+  /* 🚫 关键：完全禁止 blur / filter */
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+/* 📦 容器 */
+.container{
+  max-width:760px;
+  margin:auto;
+  padding:110px 22px 140px;
+}
+
+/* 🧭 标题 */
+.title{
+  font-size:1.85rem;
+  letter-spacing:2px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  opacity:.55;
+  font-size:.95rem;
+  margin-bottom:60px;
+}
+
+/* 💬 AI块 */
+.ai-entry{
+  margin:30px 0 70px;
+  padding:18px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* 💬 消息 */
+.msg{
+  max-width:78%;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.6;
+  margin:10px 0;
+  white-space:pre-wrap;
+}
+
+.msg.user{
+  background:#3b82f6;
+  color:#fff;
+  margin-left:auto;
+}
+
+.msg.ai{
+  background:#f4f4f5;
+  color:#111827;
+  margin-right:auto;
+  border:1px solid #e5e7eb;
+}
+
+/* 📦 内容结构 */
+.block{
+  margin:70px 0;
+}
+
+/* 🧭 小标题 */
+.hint{
+  font-size:.85rem;
+  letter-spacing:2px;
+  opacity:.55;
+  margin-bottom:14px;
+}
+
+/* 📖 正文 */
+.text{
+  line-height:2.05;
+  font-size:1rem;
+  opacity:.88;
+}
+
+/* 列表 */
+ul{
+  padding-left:18px;
+  margin:10px 0;
+}
+
+li{
+  margin:6px 0;
+}
+
+/* 分割线 */
+.divider{
+  height:1px;
+  margin:55px 0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+}
+
+/* 初始状态 */
+body{
+  opacity:0;
+}
+
+/* 进入状态 */
+body.enter{
+  opacity:1;
+  transition:opacity .28s ease;
+} 
+
+
+.back-btn{
+  position:fixed;
+
+  /* 📦 对齐到内容容器右下角 */
+  right:calc((100% - 760px) / 2 + 22px);
+  bottom:90px;
+
+  z-index:999;
+
+  padding:10px 14px;
+  border-radius:999px;
+
+  font-size:13px;
+  letter-spacing:1px;
+  text-decoration:none;
+
+  color:rgba(255,255,255,.75);
+
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+  transition:all .25s ease;
+}
+
+/* ✨ hover */
+.back-btn:hover{
+  transform:translateY(-3px);
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;
+} 
+
+</style>
+</head>
+
+<body>
+
+
+<div class="stars"></div> 
+
+<div class="container">
+
+<div class="text" style="line-height: 2.2; letter-spacing: 1.5px; opacity: 0.85;">
+  走过很远的路，看过世界的风雨与冷暖。<br><br>
+
+  有些心意不需要契约的捆绑，它天然就在那里。<br><br>
+
+  你想飞的时候，四周都是宽广的风和自由；<br><br>
+
+  你想靠岸的时候，这里永远有一个不惊慌、不妥协的锚定。<br><br>
+
+  互不干涉，各自独立，却又始终共同守望。<br><br>
+
+  顺其自然，这就很好。 
+
+</div> 
+</div>  
+
+<a class="back-btn" href="index.html">← 返回首页</a>   
+
+</div> 
+<script>
+window.addEventListener("pageshow", function () {
+  document.body.classList.add("enter")
+}) 
+</script>  
+
+</body> 
+
+</html>  
