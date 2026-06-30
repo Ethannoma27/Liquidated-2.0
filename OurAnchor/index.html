@@ -42,17 +42,18 @@ body{
 
 /* 🌟 星点层增强“远近感” */
 
+
 .stars::before{
     content:"";
     position:absolute;
     inset:0;
 
     background:
-        radial-gradient(circle at 15% 20%, rgba(255,255,255,.9) 1px, transparent 2px),
-        radial-gradient(circle at 35% 65%, rgba(200,220,255,.7) 1px, transparent 2px),
-        radial-gradient(circle at 55% 30%, rgba(255,255,255,.6) 1px, transparent 2px),
-        radial-gradient(circle at 75% 70%, rgba(180,200,255,.5) 1px, transparent 2px),
-        radial-gradient(circle at 85% 40%, rgba(255,255,255,.4) 1px, transparent 2px);
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,.9) 1px, transparent 2px),
+        radial-gradient(circle at 38% 62%, rgba(200,220,255,.7) 1px, transparent 2px),
+        radial-gradient(circle at 52% 28%, rgba(255,255,255,.6) 1px, transparent 2px),
+        radial-gradient(circle at 78% 74%, rgba(180,200,255,.5) 1px, transparent 2px),
+        radial-gradient(circle at 88% 42%, rgba(255,255,255,.4) 1px, transparent 2px);
 
     opacity:.6;
     filter: blur(.2px);
@@ -608,9 +609,8 @@ async function send(){
   const res = await callAI(text)
   addMsg("ai", res)
 } 
-
 </script> 
 </body> 
 
 
-</html>     
+</html>      
